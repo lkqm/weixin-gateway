@@ -10,7 +10,7 @@
 
     <groupId>com.github.lkqm</groupId>
     <artifactId>weixin-gateway-web</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <properties>
         <java.version>1.7</java.version>
@@ -31,12 +31,12 @@
         <dependency>
             <groupId>com.github.lkqm</groupId>
             <artifactId>weixin-gateway-spring-boot-starter</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.github.lkqm</groupId>
             <artifactId>weixin-gateway-bean</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <!-- util -->
         <dependency>
@@ -51,9 +51,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-
-  <scm>
-    <tag>v1.0.0</tag>
-  </scm>
 </project>
