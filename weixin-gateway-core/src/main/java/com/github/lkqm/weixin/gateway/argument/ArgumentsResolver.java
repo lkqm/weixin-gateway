@@ -1,28 +1,31 @@
-package com.github.lkqm.weixin.gateway.util;
+package com.github.lkqm.weixin.gateway.argument;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.lkqm.weixin.gateway.Message;
 import com.github.lkqm.weixin.gateway.annotation.WxBody;
 import com.github.lkqm.weixin.gateway.annotation.WxParam;
-import lombok.experimental.UtilityClass;
+import com.github.lkqm.weixin.gateway.util.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 微信路由处理方法参数解析器
+ * 参数参数器, 线程安全
  */
-@UtilityClass
-public class ArgumentUtils {
+public class ArgumentsResolver {
+
+    private final List<HandlerMethodArgumentResolver> resolvers = new CopyOnWriteArrayList<>();
 
     /**
      * Resolve handle method args
      */
-    public static Object[] resolveArguments(Method method, Message message) {
+    public Object[] resolveArguments(Method method, Message message) {
         Class<?>[] parameterTypes = method.getParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
         Object[] results = new Object[parameterTypes.length];
@@ -51,6 +54,20 @@ public class ArgumentUtils {
                 results[i] = getArgumentWithAnnotation(message, type, wxParam.value());
                 continue;
             }
+            // custom resolver
+            if (this.resolvers.size() > 0) {
+                HandlerMethodArgumentResolver resolverToUse = null;
+                for (HandlerMethodArgumentResolver resolver : this.resolvers) {
+                    if (resolver != null && resolver.supportsParameter(type)) {
+                        resolverToUse = resolver;
+                        break;
+                    }
+                }
+                if (resolverToUse != null) {
+                    results[i] = resolverToUse.resolveArgument(message);
+                    continue;
+                }
+            }
             results[i] = getArgumentJavaBean(message, type);
         }
 
@@ -60,7 +77,7 @@ public class ArgumentUtils {
     /**
      * 获取注解@WxParam的参数的值
      */
-    private static Object getArgumentWithAnnotation(Message message, Class type, String paramName) {
+    private Object getArgumentWithAnnotation(Message message, Class type, String paramName) {
         Map<String, Object> xmlMap = message.getXmlMap();
         final String key = paramName.trim();
         Object orgValue = xmlMap.get(key);
@@ -100,7 +117,7 @@ public class ArgumentUtils {
     /**
      * 普通Bean注入, 按照驼峰命名
      */
-    private static Object getArgumentJavaBean(Message message, Class type) {
+    private Object getArgumentJavaBean(Message message, Class type) {
         Class[] ignoreTypes = {Array.class, List.class, Map.class, Set.class, String.class, Character.class,
                 Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class};
         for (Class ignoreType : ignoreTypes) {
@@ -115,4 +132,17 @@ public class ArgumentUtils {
         return JSONObject.parseObject(json, type);
     }
 
+    /**
+     * 添加参数解析器
+     */
+    public void addResolver(HandlerMethodArgumentResolver resolver) {
+        resolvers.add(resolver);
+    }
+
+    /**
+     * 添加参数解析器
+     */
+    public void addAllResolver(Collection<HandlerMethodArgumentResolver> resolvers) {
+        this.resolvers.addAll(resolvers);
+    }
 }

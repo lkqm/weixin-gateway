@@ -58,13 +58,36 @@
 - `@WxMessage`: 注解用于消息匹配
 
 ### 参数注入
-处理微信消息(事件)的处理方法, 参数支持注入3种参数:
+处理微信消息(事件)的处理方法, 参数支持注入4种参数, 解析顺序依次向下
 
-- 普通bean: 普通JavaBean, 字段命名需要按照驼峰命名(内部是xml转json, 然后json转对象)
 - @WxParam: 方法参数指定注解`@WxParam`, 会自定注入指定xml标记的值(不支持多层嵌套)
 - @WxBody: 方法参数指定注解`@WxBody`, 并且类型String, 会自动注入值为微信请求的xml(非密文)
+- 自定义参数解析: a.实现接口HandlerMethodArgumentResolver, b.注入容器
+- 普通bean: 普通JavaBean, 字段命名需要按照驼峰命名(内部是xml转json, 然后json转对象)
 
 注意: 基本类型参数只会注入默认值
+
+### 多公众号
+可以实现多公众号, 控制层路径地址: /wx/gateway/{key}, 配置自定义参数解析可以实现: HandlerMethodArgumentResolver
+```java
+    @Component
+    public class WxMpServiceArgumentResolver implements HandlerMethodArgumentResolver {
+        
+        private Map<String, WxMpService> appIdToWxMpServiceMap = new ConcurrentHashMap<>();
+
+        @Override
+        public boolean supportsParameter(Class<?> type) {
+            return WxMpService.class.isAssignableFrom(type);
+        }
+
+        @Override
+        public Object resolveArgument(Message message) {
+            WxConfig config = message.getWxConfig();
+            return appIdToWxMpServiceMap.get(config.getAppId());
+        }
+    }
+```
+
 
 
 

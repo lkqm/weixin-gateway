@@ -42,6 +42,7 @@ public class WxPortalHandler {
             xml = WxUtils.decryptXml(config, requestBody);
         }
         Message message = Message.createFromXml(xml);
+        message.setWxConfig(config);
         router.route(message);
         return "";
     }

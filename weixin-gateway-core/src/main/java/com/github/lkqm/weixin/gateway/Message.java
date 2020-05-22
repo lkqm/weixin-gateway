@@ -41,6 +41,11 @@ public class Message implements Serializable {
     //------------------原始信息------------------------//
 
     /**
+     * 微信配置
+     */
+    private WxConfig wxConfig;
+
+    /**
      * 原始xml数据
      */
     private transient String xml;

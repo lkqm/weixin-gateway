@@ -4,6 +4,8 @@ import com.github.lkqm.weixin.gateway.WxPortalHandler;
 import com.github.lkqm.weixin.gateway.WxRegister;
 import com.github.lkqm.weixin.gateway.WxRouter;
 import com.github.lkqm.weixin.gateway.annotation.WxController;
+import com.github.lkqm.weixin.gateway.argument.ArgumentsResolver;
+import com.github.lkqm.weixin.gateway.argument.HandlerMethodArgumentResolver;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.Resource;
+import java.util.Collection;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,9 +30,18 @@ public class WxGatewayAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public WxRouter wxMessageRouter(@Qualifier("wxRouterExecutor") ExecutorService executor) {
+    public ArgumentsResolver wxHandlerArgumentResolver() {
+        Collection<HandlerMethodArgumentResolver> resolvers = ctx.getBeansOfType(HandlerMethodArgumentResolver.class).values();
+        ArgumentsResolver argumentsResolver = new ArgumentsResolver();
+        argumentsResolver.addAllResolver(resolvers);
+        return argumentsResolver;
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public WxRouter wxMessageRouter(@Qualifier("wxRouterExecutor") ExecutorService executor, ArgumentsResolver argumentsResolver) {
         WxRouter router = new WxRouter(executor);
-        WxRegister.create(router).register(ctx.getBeansWithAnnotation(WxController.class).values());
+        WxRegister.create(router, argumentsResolver).register(ctx.getBeansWithAnnotation(WxController.class).values());
         return router;
     }
 

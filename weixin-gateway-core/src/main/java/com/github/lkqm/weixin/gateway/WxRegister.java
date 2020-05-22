@@ -2,7 +2,9 @@ package com.github.lkqm.weixin.gateway;
 
 import com.github.lkqm.weixin.gateway.annotation.WxEvent;
 import com.github.lkqm.weixin.gateway.annotation.WxMessage;
+import com.github.lkqm.weixin.gateway.argument.ArgumentsResolver;
 import com.github.lkqm.weixin.gateway.util.ReflectionUtils;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Method;
@@ -18,16 +20,18 @@ import java.util.Map;
 public class WxRegister {
 
     private WxRouter router;
+    private ArgumentsResolver argumentsResolver;
 
     private Map<String, Method> registeredMessages = new HashMap<>();
     private Map<String, Method> registeredEvents = new HashMap<>();
 
-    private WxRegister(WxRouter router) {
+    private WxRegister(@NonNull WxRouter router, @NonNull ArgumentsResolver argumentsResolver) {
         this.router = router;
+        this.argumentsResolver = argumentsResolver;
     }
 
-    public static WxRegister create(WxRouter router) {
-        return new WxRegister(router);
+    public static WxRegister create(WxRouter router, ArgumentsResolver argumentsResolver) {
+        return new WxRegister(router, argumentsResolver);
     }
 
     /**
@@ -73,7 +77,7 @@ public class WxRegister {
             throw new IllegalArgumentException("wx router register failed, duplicated event=[" + event + "]: " + methodName + " ," + ReflectionUtils.getMethodFullName(eventMethod));
         }
 
-        WxHandler handler = WxHandler.create(invoker, method);
+        WxHandler handler = WxHandler.create(invoker, method, argumentsResolver);
         router.rule().msgType("event").event(event).handler(handler).next();
         registeredEvents.put(event, method);
         log.info("wx router register event handler [event={}]: {}", event, methodName);
@@ -94,7 +98,7 @@ public class WxRegister {
             throw new IllegalArgumentException("wx router register failed, duplicated message type=[" + msgType + "]: " + methodName + " ," + ReflectionUtils.getMethodFullName(orgMessageMethod));
         }
 
-        WxHandler handler = WxHandler.create(invoker, method);
+        WxHandler handler = WxHandler.create(invoker, method, argumentsResolver);
         router.rule().msgType(msgType).handler(handler).next();
         registeredMessages.put(msgType, method);
         log.info("wx router register message handler [msgType={}]: {}", msgType, methodName);
