@@ -1,27 +1,29 @@
 # weixin-gateway
-一个基于注解进行微信消息或事件通知的网关。
+![Maven Central](https://img.shields.io/maven-central/v/com.github.lkqm/weixin-gateway)
+
+微信公众号消息网关, 基于注解分发消息, 提供脚手架项目。
 
 ```java
-    @WxController
-    public class InvoiceHandler {
-        @WxEvent("user_authorize_invoice")
-        public void authorEvent(InvoiceAuthEventMessage message) {
-            System.out.println("电子发票授权事件");
-        }
+@WxController
+public class InvoiceHandler {
+    @WxEvent("user_authorize_invoice")
+    public void authorEvent(InvoiceAuthEventMessage message) {
+        System.out.println("电子发票授权事件");
     }
+}
 ```
 
 支持: JDK1.7 +
 
 脚手架项目: [weixin-gateway-web](https://github.com/lkqm/weixin-gateway/tree/master/weixin-gateway-web)
 
-## 快速开始(spring-boot项目)
+## 快速开始
 1. 引入依赖
     ```xml
     <dependency>
         <groupId>com.github.lkqm</groupId>
         <artifactId>weixin-gateway-spring-boot-starter</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>${version}</version>
     </dependency>
     ```
 2. 添加配置(application.properties)
@@ -52,13 +54,13 @@
 
 ## 你需要知道的？
 ### 消息分发
-所有的消息分发处理均是异步。
+所有的消息分发处理均是异步, 处理消息或事件类型不能重复声明。
 - `@WxController`: 标记类为消息处理类
 - `@WxEvent`: 注解用于事件匹配
 - `@WxMessage`: 注解用于消息匹配
 
 ### 参数注入
-处理微信消息(事件)的处理方法, 参数支持注入4种参数, 解析顺序依次向下
+响应微信消息的处理方法, 支持注入4种参数, 解析顺序依次向下:
 
 - @WxParam: 方法参数指定注解`@WxParam`, 会自定注入指定xml标记的值(不支持多层嵌套)
 - @WxBody: 方法参数指定注解`@WxBody`, 并且类型String, 会自动注入值为微信请求的xml(非密文)
@@ -70,22 +72,22 @@
 ### 多公众号
 可以实现多公众号, 控制层路径地址: /wx/gateway/{key}, 配置自定义参数解析可以实现: HandlerMethodArgumentResolver
 ```java
-    @Component
-    public class WxMpServiceArgumentResolver implements HandlerMethodArgumentResolver {
-        
-        private Map<String, WxMpService> appIdToWxMpServiceMap = new ConcurrentHashMap<>();
+@Component
+public class WxMpServiceArgumentResolver implements HandlerMethodArgumentResolver {
+    
+    private Map<String, WxMpService> appIdToWxMpServiceMap = new ConcurrentHashMap<>();
 
-        @Override
-        public boolean supportsParameter(Class<?> type) {
-            return WxMpService.class.isAssignableFrom(type);
-        }
-
-        @Override
-        public Object resolveArgument(Message message) {
-            WxConfig config = message.getWxConfig();
-            return appIdToWxMpServiceMap.get(config.getAppId());
-        }
+    @Override
+    public boolean supportsParameter(Class<?> type) {
+        return WxMpService.class.isAssignableFrom(type);
     }
+
+    @Override
+    public Object resolveArgument(Message message) {
+        WxConfig config = message.getWxConfig();
+        return appIdToWxMpServiceMap.get(config.getAppId());
+    }
+}
 ```
 
 
