@@ -11,4 +11,20 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WxBody {
+
+    /**
+     * 消息数据体类型
+     */
+    Type value() default Type.XML;
+
+    enum Type {
+        /**
+         * 非加密的原始xml数据
+         */
+        XML,
+        /**
+         * 转换后驼峰命名格式的json
+         */
+        JSON_CAMEL
+    }
 }

@@ -38,7 +38,11 @@ public class ArgumentUtils {
             Annotation[] annotations = parameterAnnotations[i];
             WxBody wxBody = ReflectionUtils.getAnnotation(annotations, WxBody.class);
             if (wxBody != null && String.class == type) {
-                results[i] = message.getXml();
+                if (wxBody.value() == WxBody.Type.JSON_CAMEL) {
+                    results[i] = message.getCamelJson();
+                } else {
+                    results[i] = message.getXml();
+                }
                 continue;
             }
             // @WxParam
