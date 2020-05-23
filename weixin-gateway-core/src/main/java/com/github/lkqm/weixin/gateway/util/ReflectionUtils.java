@@ -45,7 +45,7 @@ public class ReflectionUtils {
         } else if (float.class == type) {
             return 0F;
         } else if (boolean.class == type) {
-            return true;
+            return false;
         } else {
             return null;
         }
@@ -55,7 +55,15 @@ public class ReflectionUtils {
      * 获取方法全名包括参数
      */
     public static String getMethodFullName(Method method) {
-        String className = method.getDeclaringClass().getCanonicalName();
+        return doGetMethodFullSimName(method, true);
+    }
+
+    public static String getMethodFullSimpleName(Method method) {
+        return doGetMethodFullSimName(method, false);
+    }
+
+    private static String doGetMethodFullSimName(Method method, boolean fullClassName) {
+        String className = fullClassName ? method.getDeclaringClass().getCanonicalName() : method.getDeclaringClass().getSimpleName();
         String methodName = method.getName();
         Class<?>[] types = method.getParameterTypes();
         String[] typeNames = new String[types.length];

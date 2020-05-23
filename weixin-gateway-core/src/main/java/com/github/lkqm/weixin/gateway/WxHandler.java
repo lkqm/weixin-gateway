@@ -2,6 +2,7 @@ package com.github.lkqm.weixin.gateway;
 
 
 import com.github.lkqm.weixin.gateway.argument.ArgumentsResolver;
+import lombok.Getter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -9,6 +10,7 @@ import java.lang.reflect.Method;
 /**
  * 微信消息处理器, 封装具体的消息处理方法
  */
+@Getter
 public class WxHandler {
 
     private Object invoker;

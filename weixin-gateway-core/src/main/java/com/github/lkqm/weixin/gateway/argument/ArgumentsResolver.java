@@ -82,8 +82,8 @@ public class ArgumentsResolver {
         final String key = paramName.trim();
         Object orgValue = xmlMap.get(key);
 
-        if (orgValue.getClass() != String.class) return null;
-        if (String.class == type || orgValue == null) {
+        if (orgValue == null || orgValue.getClass() != String.class) return null;
+        if (String.class == type) {
             return orgValue;
         }
 

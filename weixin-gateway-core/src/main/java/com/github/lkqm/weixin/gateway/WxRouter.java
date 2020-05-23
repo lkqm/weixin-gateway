@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class WxRouter {
 
-    private final List<WxRouteRule> rules = new ArrayList<>();
+    final List<WxRouteRule> rules = new ArrayList<>();
 
     private ExecutorService executor;
 

@@ -22,8 +22,8 @@ public class WxRegister {
     private WxRouter router;
     private ArgumentsResolver argumentsResolver;
 
-    private Map<String, Method> registeredMessages = new HashMap<>();
-    private Map<String, Method> registeredEvents = new HashMap<>();
+    Map<String, Method> registeredMessages = new HashMap<>();
+    Map<String, Method> registeredEvents = new HashMap<>();
 
     private WxRegister(@NonNull WxRouter router, @NonNull ArgumentsResolver argumentsResolver) {
         this.router = router;
@@ -48,7 +48,7 @@ public class WxRegister {
         }
     }
 
-    private void registerInvoker(Object invoker) {
+    public void registerInvoker(Object invoker) {
         Class<?> clazz = invoker.getClass();
         Method[] methods = clazz.getDeclaredMethods();
         for (Method method : methods) {
@@ -56,7 +56,7 @@ public class WxRegister {
             WxMessage wxMessage = method.getAnnotation(WxMessage.class);
 
             if (wxEvent != null && wxMessage != null) {
-                String methodName = ReflectionUtils.getMethodFullName(method);
+                String methodName = ReflectionUtils.getMethodFullSimpleName(method);
                 throw new IllegalArgumentException("wx router register failed, duplicated annotation @WxEvent, @WxMessage: " + methodName);
             } else if (wxEvent != null) {
                 registerEventHandler(invoker, method, wxEvent);
@@ -70,11 +70,11 @@ public class WxRegister {
      * Register wx router handle method with @WxEvent
      */
     private void registerEventHandler(Object invoker, Method method, WxEvent wxEvent) {
-        String methodName = ReflectionUtils.getMethodFullName(method);
+        String methodName = ReflectionUtils.getMethodFullSimpleName(method);
         String event = wxEvent.value();
         Method eventMethod = registeredEvents.get(event);
         if (eventMethod != null) {
-            throw new IllegalArgumentException("wx router register failed, duplicated event=[" + event + "]: " + methodName + " ," + ReflectionUtils.getMethodFullName(eventMethod));
+            throw new IllegalArgumentException("wx router register failed, duplicated event=[" + event + "]: " + methodName + " ," + ReflectionUtils.getMethodFullSimpleName(eventMethod));
         }
 
         WxHandler handler = WxHandler.create(invoker, method, argumentsResolver);
@@ -88,14 +88,14 @@ public class WxRegister {
      */
     private void registryMessageHandler(Object invoker, Method method, WxMessage wxMessage) {
         String msgType = wxMessage.value();
-        String methodName = ReflectionUtils.getMethodFullName(method);
+        String methodName = ReflectionUtils.getMethodFullSimpleName(method);
         if ("event".equals(msgType)) {
             throw new IllegalArgumentException("wx router register failed，@WxMessage value must not be 'event': " + methodName);
         }
 
         Method orgMessageMethod = registeredMessages.get(msgType);
         if (orgMessageMethod != null) {
-            throw new IllegalArgumentException("wx router register failed, duplicated message type=[" + msgType + "]: " + methodName + " ," + ReflectionUtils.getMethodFullName(orgMessageMethod));
+            throw new IllegalArgumentException("wx router register failed, duplicated message type=[" + msgType + "]: " + methodName + " ," + ReflectionUtils.getMethodFullSimpleName(orgMessageMethod));
         }
 
         WxHandler handler = WxHandler.create(invoker, method, argumentsResolver);

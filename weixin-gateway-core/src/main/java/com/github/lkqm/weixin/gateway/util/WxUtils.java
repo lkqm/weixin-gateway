@@ -60,7 +60,7 @@ public class WxUtils {
     /**
      * 生成签名
      */
-    private static String signature(String token, String timestamp, String nonce) {
+    public static String signature(String token, String timestamp, String nonce) {
         String[] elements = {token, timestamp, nonce};
         Arrays.sort(elements);
         String text = StringUtils.join(elements, "");

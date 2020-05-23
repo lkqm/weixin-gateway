@@ -2,7 +2,7 @@ package com.github.lkqm.weixin.gateway.util;
 
 import lombok.experimental.UtilityClass;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 @UtilityClass
 public class StringUtils {
@@ -58,10 +58,6 @@ public class StringUtils {
     }
 
     public static byte[] getBytesUTF8(String source) {
-        try {
-            return source.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException("Never happen", e);
-        }
+        return source.getBytes(StandardCharsets.UTF_8);
     }
 }
